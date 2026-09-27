@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Petway – כניסה למנהל</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0f14;
+      --surface:   #161a23;
+      --surface2:  #1e2330;
+      --border:    #2a3040;
+      --accent:    #f97316;
+      --accent2:   #fb923c;
+      --text:      #e8ecf3;
+      --text-dim:  #8896aa;
+      --red:       #ef4444;
+      --radius:    14px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      direction: rtl;
+    }
+
+    /* רקע דקורטיבי */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 600px 400px at 20% 30%, rgba(249,115,22,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 300px at 80% 70%, rgba(249,115,22,0.04) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      position: relative;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .logo span { color: var(--accent); }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 14px;
+      margin-bottom: 36px;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .field input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 13px 16px;
+      color: var(--text);
+      font-family: 'Heebo', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(249,115,22,0.15);
+    }
+    .field input::placeholder { color: var(--text-dim); opacity: 0.5; }
+
+    .btn-login {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all 0.2s;
+    }
+    .btn-login:hover {
+      background: var(--accent2);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(249,115,22,0.35);
+    }
+    .btn-login:active { transform: translateY(0); }
+    .btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .error-msg {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #fca5a5;
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 14px;
+      margin-bottom: 18px;
+      display: none;
+    }
+    .error-msg.show { display: block; animation: shake 0.3s ease; }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="logo">Pet<span>way</span></div>
+  <div class="subtitle">כניסה למערכת ניהול</div>
+
+  <div class="error-msg" id="errorMsg">שם משתמש או סיסמה שגויים</div>
+
+  <div class="field">
+    <label>שם משתמש</label>
+    <input type="text" id="username" placeholder="admin" autocomplete="username" />
+  </div>
+
+  <div class="field">
+    <label>סיסמה</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter') doLogin()" />
+  </div>
+
+  <button class="btn-login" id="loginBtn" onclick="doLogin()">כניסה</button>
+</div>
+
+<script>
+  async function doLogin() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('loginBtn');
+    const errorMsg = document.getElementById('errorMsg');
+
+    errorMsg.classList.remove('show');
+
+    if (!username || !password) {
+      errorMsg.textContent = 'אנא מלא שם משתמש וסיסמה';
+      errorMsg.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = 'מתחבר... <span class="spinner"></span>';
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        window.location.href = '/dashboard';
+      } else {
+        errorMsg.textContent = data.error || 'שם משתמש או סיסמה שגויים';
+        errorMsg.classList.add('show');
+        btn.disabled = false;
+        btn.innerHTML = 'כניסה';
+      }
+    } catch (err) {
+      errorMsg.textContent = 'שגיאת רשת — נסה שוב';
+      errorMsg.classList.add('show');
+      btn.disabled = false;
+      btn.innerHTML = 'כניסה';
+    }
+  }
+
+  // פוקוס אוטומטי
+  document.getElementById('username').focus();
+</script>
+</body>
+</html>

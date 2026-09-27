@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Petway – עדכון מוצר</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=Assistant:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:        #0d0f14;
+      --surface:   #161a23;
+      --surface2:  #1e2330;
+      --border:    #2a3040;
+      --accent:    #f97316;
+      --accent2:   #fb923c;
+      --text:      #e8ecf3;
+      --text-dim:  #8896aa;
+      --text-faint:#4a5568;
+      --green:     #22c55e;
+      --red:       #ef4444;
+      --radius:    14px;
+      --radius-sm: 8px;
+      --shadow:    0 4px 24px rgba(0,0,0,0.4);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Heebo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; direction: rtl; }
+
+    /* Header */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 28px; gap: 16px; height: 64px; position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo span { color: var(--accent); }
+    .header-badge { background: var(--accent); color: white; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+    .header-spacer { flex: 1; }
+    .btn-back { display:flex; align-items:center; gap:6px; background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); padding:8px 16px; border-radius:var(--radius-sm); font-family:'Heebo',sans-serif; font-size:13px; font-weight:600; cursor:pointer; text-decoration:none; transition:all 0.2s; }
+    .btn-back:hover { border-color:var(--accent); color:var(--accent); }
+
+    /* Steps */
+    .steps-bar {
+      display:flex; align-items:center; justify-content:center; gap:0;
+      padding: 20px 28px; background:var(--surface); border-bottom:1px solid var(--border);
+    }
+    .step { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-faint); font-weight:500; }
+    .step.active { color:var(--accent); }
+    .step.done { color:var(--green); }
+    .step-num { width:28px; height:28px; border-radius:50%; border:2px solid currentColor; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+    .step.done .step-num { background:var(--green); border-color:var(--green); color:white; }
+    .step.active .step-num { background:var(--accent); border-color:var(--accent); color:white; }
+    .step-arrow { margin:0 12px; color:var(--border); font-size:16px; }
+
+    /* Main layout */
+    .main-wrap { display:grid; grid-template-columns:1fr 420px; gap:0; height:calc(100vh - 64px - 73px); overflow:hidden; }
+
+    /* Products list panel */
+    .list-panel {
+      background:var(--surface); border-left:1px solid var(--border);
+      display:flex; flex-direction:column; overflow:hidden;
+    }
+    .list-panel-header { padding:20px 24px 16px; border-bottom:1px solid var(--border); flex-shrink:0; }
+    .list-panel-header h3 { font-size:15px; font-weight:700; margin-bottom:4px; }
+    .list-panel-header p { font-size:12px; color:var(--text-dim); }
+    .product-tabs { display:flex; gap:4px; padding:12px 16px; border-bottom:1px solid var(--border); flex-shrink:0; overflow-x:auto; }
+    .product-tab {
+      flex-shrink:0; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600;
+      cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text-dim);
+      transition:all 0.2s; font-family:'Heebo',sans-serif;
+    }
+    .product-tab.active { background:var(--accent); border-color:var(--accent); color:white; }
+    .product-tab .tab-name { max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; }
+
+    /* Search panel */
+    .search-panel {
+      flex:1; display:flex; flex-direction:column; padding:24px;
+      overflow-y:auto;
+    }
+    .search-row { display:flex; gap:10px; margin-bottom:20px; }
+    .search-input {
+      flex:1; background:var(--surface2); border:1px solid var(--border);
+      border-radius:var(--radius-sm); padding:10px 14px; color:var(--text);
+      font-family:'Heebo',sans-serif; font-size:14px; outline:none;
+    }
+    .search-input:focus { border-color:var(--accent); }
+    .btn-search {
+      background:var(--accent); color:white; border:none;
+      padding:10px 18px; border-radius:var(--radius-sm);
+      font-family:'Heebo',sans-serif; font-size:14px; font-weight:600; cursor:pointer;
+    }
+    .btn-search:hover { background:var(--accent2); }
+    .btn-search:disabled { opacity:0.5; cursor:not-allowed; }
+
+    .results-list { display:flex; flex-direction:column; gap:8px; }
+    .result-item {
+      display:flex; align-items:center; gap:12px;
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:var(--radius-sm); padding:12px 14px; cursor:pointer;
+      transition:all 0.2s;
+    }
+    .result-item:hover { border-color:var(--accent); background:rgba(249,115,22,0.05); }
+    .result-item.selected { border-color:var(--accent); background:rgba(249,115,22,0.1); }
+    .result-img { width:44px; height:44px; border-radius:6px; object-fit:cover; background:var(--bg); flex-shrink:0; }
+    .result-info { flex:1; min-width:0; }
+    .result-name { font-size:13px; font-weight:600; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .result-meta { font-size:11px; color:var(--text-dim); }
+    .result-check { width:20px; height:20px; border-radius:50%; border:2px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; }
+    .result-item.selected .result-check { background:var(--accent); border-color:var(--accent); color:white; }
+
+    .loading-row { text-align:center; padding:32px; color:var(--text-dim); font-size:13px; }
+    .spinner { display:inline-block; width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.6s linear infinite; vertical-align:middle; margin-left:8px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* Form panel */
+    .form-panel {
+      background:var(--surface); border-left:1px solid var(--border);
+      display:flex; flex-direction:column; overflow:hidden;
+    }
+    .panel-header {
+      padding:20px 24px 16px; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; gap:12px; flex-shrink:0;
+    }
+    .panel-icon { font-size:24px; }
+    .panel-title { font-size:15px; font-weight:700; }
+    .panel-subtitle { font-size:12px; color:var(--text-dim); margin-top:2px; }
+    .panel-empty { flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; color:var(--text-faint); }
+    .panel-empty-icon { font-size:40px; }
+
+    .form-scroll { flex:1; overflow-y:auto; padding:20px 24px 24px; }
+    .form-section { margin-bottom:20px; }
+    .section-label { font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-dim); margin-bottom:12px; }
+    .field { margin-bottom:14px; }
+    .field label { display:block; font-size:12px; font-weight:600; color:var(--text-dim); margin-bottom:6px; letter-spacing:0.3px; }
+    .field input, .field select, .field textarea {
+      width:100%; background:var(--surface2); border:1px solid var(--border);
+      border-radius:var(--radius-sm); padding:10px 12px; color:var(--text);
+      font-family:'Heebo',sans-serif; font-size:14px; outline:none; transition:border-color 0.2s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color:var(--accent); }
+    .field select option { background:var(--surface2); }
+    .row-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .divider { height:1px; background:var(--border); margin:4px 0 20px; }
+
+    /* Variations */
+    .variation-item {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:var(--radius-sm); padding:14px; margin-bottom:10px;
+    }
+    .variation-item[data-is-deal="1"] { border-color:rgba(249,115,22,0.4); background:rgba(249,115,22,0.05); }
+    .var-row { display:grid; grid-template-columns:1fr 80px 80px 32px; gap:8px; align-items:center; }
+    .var-row input, .var-row select {
+      background:var(--bg); border:1px solid var(--border);
+      border-radius:6px; padding:8px 10px; color:var(--text);
+      font-family:'Heebo',sans-serif; font-size:13px; outline:none; width:100%;
+    }
+    .var-row input:focus, .var-row select:focus { border-color:var(--accent); }
+    .btn-remove-var {
+      background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.25);
+      color:var(--red); border-radius:6px; cursor:pointer; font-size:14px;
+      width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+    }
+    .var-discount-row { margin-top:8px; display:flex; align-items:center; gap:8px; }
+    .var-discount-row label { font-size:11px; color:var(--text-dim); white-space:nowrap; }
+    .var-discount-row input {
+      width:100px; background:var(--bg); border:1px solid var(--border);
+      border-radius:6px; padding:6px 10px; color:var(--text);
+      font-family:'Heebo',sans-serif; font-size:13px; outline:none;
+    }
+    .var-discount-row input:focus { border-color:var(--accent); }
+    .var-labels { display:grid; grid-template-columns:1fr 80px 80px 32px; gap:8px; margin-bottom:4px; }
+    .var-labels span { font-size:10px; color:var(--text-faint); font-weight:600; letter-spacing:0.3px; padding-right:2px; }
+    .btn-add-var {
+      background:rgba(255,255,255,0.04); border:1px dashed var(--border); color:var(--text-dim);
+      padding:8px 16px; border-radius:var(--radius-sm); font-family:'Heebo',sans-serif;
+      font-size:13px; cursor:pointer; transition:all 0.2s;
+    }
+    .btn-add-var:hover { border-color:var(--accent); color:var(--accent); }
+
+    /* Categories */
+    .cat-dropdown-wrap { position:relative; margin-bottom:10px; }
+    .cat-dropdown-list {
+      position:absolute; top:100%; right:0; left:0; z-index:200;
+      background:var(--surface); border:1px solid var(--border); border-top:none;
+      border-radius:0 0 var(--radius-sm) var(--radius-sm);
+      max-height:200px; overflow-y:auto; display:none;
+    }
+    .cat-dropdown-list.open { display:block; }
+    .cat-option { padding:10px 14px; font-size:13px; cursor:pointer; transition:background 0.15s; }
+    .cat-option:hover { background:var(--surface2); color:var(--accent); }
+    .selected-categories { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+    .cat-tag {
+      display:flex; align-items:center; gap:6px;
+      background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.3);
+      color:var(--accent); padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;
+    }
+    .cat-tag button { background:none; border:none; color:var(--accent); cursor:pointer; font-size:14px; line-height:1; padding:0 2px; }
+
+    /* Images */
+    .url-row { display:flex; gap:10px; margin-bottom:12px; }
+    .url-row input {
+      flex:1; background:var(--surface2); border:1px solid var(--border);
+      border-radius:var(--radius-sm); padding:10px 12px; color:var(--text);
+      font-family:'Heebo',sans-serif; font-size:13px; outline:none;
+    }
+    .url-row input:focus { border-color:var(--accent); }
+    .btn-scrape {
+      background:var(--surface2); border:1px solid var(--border);
+      color:var(--text-dim); padding:10px 14px; border-radius:var(--radius-sm);
+      font-family:'Heebo',sans-serif; font-size:13px; cursor:pointer;
+    }
+    .btn-scrape:hover { border-color:var(--accent); color:var(--accent); }
+    .url-or-divider { text-align:center; font-size:11px; color:var(--text-faint); margin:8px 0; }
+    .image-drop {
+      border:2px dashed var(--border); border-radius:var(--radius-sm);
+      padding:28px; text-align:center; cursor:pointer; transition:all 0.2s; position:relative;
+    }
+    .image-drop:hover { border-color:var(--accent); }
+    .image-drop input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .image-preview-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .img-thumb {
+      width:72px; height:72px; border-radius:8px; object-fit:cover;
+      border:2px solid var(--border); cursor:pointer; transition:all 0.2s; position:relative;
+    }
+    .img-thumb:hover { border-color:var(--accent); }
+    .img-thumb.selected { border-color:var(--accent); box-shadow:0 0 0 3px rgba(249,115,22,0.3); }
+    .img-thumb-wrap { position:relative; display:inline-block; }
+    .img-remove {
+      position:absolute; top:-6px; left:-6px; width:20px; height:20px;
+      background:var(--red); color:white; border:none; border-radius:50%;
+      cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center;
+      z-index:10;
+    }
+
+    /* Bottom action bar */
+    .action-bar {
+      padding:16px 24px; border-top:1px solid var(--border); background:var(--surface);
+      display:flex; align-items:center; gap:12px;
+    }
+    .btn-save {
+      flex:1; background:var(--accent); color:white; border:none;
+      padding:12px; border-radius:var(--radius-sm);
+      font-family:'Heebo',sans-serif; font-size:15px; font-weight:700; cursor:pointer;
+      transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .btn-save:hover { background:var(--accent2); transform:translateY(-1px); }
+    .btn-save:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+    .btn-save-all {
+      background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.3);
+      color:var(--green); padding:12px 20px; border-radius:var(--radius-sm);
+      font-family:'Heebo',sans-serif; font-size:14px; font-weight:700; cursor:pointer;
+      transition:all 0.2s; white-space:nowrap;
+    }
+    .btn-save-all:hover { background:rgba(34,197,94,0.2); }
+
+    /* Progress */
+    .progress-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:999;
+      display:none; align-items:center; justify-content:center;
+    }
+    .progress-box {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      padding:32px; width:480px; max-height:70vh; overflow-y:auto;
+    }
+    .progress-title { font-size:16px; font-weight:700; margin-bottom:20px; }
+    .progress-log { font-size:13px; line-height:1.8; color:var(--text-dim); font-family:monospace; }
+    .progress-log .done { color:var(--green); }
+    .progress-log .err  { color:var(--red); }
+    .progress-log .info { color:#94a3b8; font-style:italic; }
+    .progress-bar-wrap  { background:rgba(255,255,255,0.1); border-radius:999px; height:6px; margin-bottom:16px; overflow:hidden; }
+    .progress-bar       { height:6px; background:var(--accent); border-radius:999px; width:0%; transition:width 0.4s ease; }
+    .btn-close-progress {
+      margin-top:20px; width:100%; padding:10px; background:var(--accent);
+      border:none; color:white; border-radius:var(--radius-sm);
+      font-family:'Heebo',sans-serif; font-size:14px; font-weight:600; cursor:pointer;
+      display:none;
+    }
+
+    /* Toast */
+    .toast-container { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:8px; align-items:center; }
+    .toast { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 20px; font-size:13px; font-weight:500; box-shadow:var(--shadow); animation:slideUp 0.3s ease; white-space:nowrap; }
+    .toast.success { border-color:var(--green); color:var(--green); }
+    .toast.error   { border-color:var(--red);   color:var(--red); }
+    .toast.info    { border-color:var(--accent); color:var(--accent); }
+    @keyframes slideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+    /* Deal modal */
+    #dealModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:500; align-items:center; justify-content:center; }
+    #dealModal.open { display:flex; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+    .text-sm { font-size:13px; }
+    .no-results { text-align:center; padding:32px; color:var(--text-faint); font-size:13px; }
+
+    .btn-proceed {
+      width:100%; padding:12px; background:var(--accent); border:none; color:white;
+      border-radius:var(--radius-sm); font-family:'Heebo',sans-serif; font-size:15px;
+      font-weight:700; cursor:pointer; transition:all 0.2s;
+    }
+    .btn-proceed:hover { background:var(--accent2); transform:translateY(-1px); }
+    .btn-proceed:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Pet<span>way</span></div>
+  <div class="header-badge">UPDATE</div>
+  <div class="header-spacer"></div>
+  <a href="/dashboard" class="btn-back">← חזרה לדשבורד</a>
+</header>
+
+<div class="steps-bar">
+  <div class="step done" id="step1">
+    <div class="step-num">✓</div>
+    <span>חיפוש</span>
+  </div>
+  <div class="step-arrow">›</div>
+  <div class="step active" id="step2">
+    <div class="step-num">2</div>
+    <span>עריכה ושמירה</span>
+  </div>
+</div>
+
+<div class="main-wrap" id="mainWrap">
+
+  <div class="list-panel" id="listPanel">
+    <div class="list-panel-header">
+      <h3 id="listTitle">טוען מוצרים...</h3>
+      <p id="listSubtitle">בחר מוצר לעריכה</p>
+    </div>
+    <div class="product-tabs" id="productTabs"></div>
+    <div class="search-panel" id="searchPanel">
+      <div id="searchMode">
+        <div class="search-row">
+          <input type="text" class="search-input" id="searchInput" placeholder="חפש מוצר לפי שם..." onkeydown="if(event.key==='Enter') doSearch()" />
+          <button class="btn-search" id="searchBtn" onclick="doSearch()">חפש</button>
+        </div>
+        <div id="searchResults"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-panel" id="formPanel">
+
+    <div class="panel-header">
+      <div class="panel-icon">✏️</div>
+      <div>
+        <div class="panel-title" id="formTitle">בחר מוצר לעריכה</div>
+        <div class="panel-subtitle" id="formSubtitle">בחר מוצר מהרשימה משמאל</div>
+      </div>
+    </div>
+
+    <div class="panel-empty" id="panelEmpty">
+      <div class="panel-empty-icon">👈</div>
+      <div style="font-size:14px;font-weight:600">בחר מוצר לעריכה</div>
+      <div style="font-size:13px">חפש וסמן מוצר מהרשימה משמאל</div>
+    </div>
+
+    <div class="form-scroll" id="formScroll" style="display:none">
+
+      <div class="form-section">
+        <div class="section-label">מידע בסיסי</div>
+        <div class="field">
+          <label>שם המוצר *</label>
+          <input type="text" id="f-title" placeholder="שם המוצר" />
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>מותג</label>
+            <select id="f-brand" onchange="onBrandSelect()">
+              <option value="">— בחר מותג —</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>מחיר בסיס (₪)</label>
+            <input type="number" id="f-price" placeholder="89" />
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>מחיר מבצע (₪)</label>
+            <input type="number" id="f-price-discount" placeholder="79" />
+          </div>
+          <div class="field">
+            <label>סטטוס</label>
+            <select id="f-status">
+              <option value="1">פעיל</option>
+              <option value="2">מוסתר</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>תיאור קצר (SEO)</label>
+          <textarea id="f-desc" rows="2" placeholder="תיאור קצר..."></textarea>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-section">
+        <div class="section-label">גדלים / וריאציות</div>
+        <div class="variations-list" id="variationsList"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-add-var" onclick="addVariation()">+ הוסף גודל</button>
+          <button class="btn-add-var" onclick="openDealModal()"
+            style="background:rgba(249,115,22,0.12);border-color:var(--accent);color:var(--accent)">
+            💥 דיל יחידות
+          </button>
+        </div>
+
+        <div id="dealModal">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:360px;direction:rtl">
+            <div style="font-size:16px;font-weight:700;margin-bottom:20px">💥 הוסף דיל יחידות</div>
+            <div class="field" style="margin-bottom:14px">
+              <label>בסיס — על איזו וריאציה?</label>
+              <select id="deal-base-var" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text);font-family:Heebo,sans-serif;font-size:14px"></select>
+            </div>
+            <div class="field" style="margin-bottom:14px">
+              <label>כמות יחידות</label>
+              <select id="deal-qty" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text);font-family:Heebo,sans-serif;font-size:14px" onchange="updateDealPreview()">
+                <option value="2">2 יחידות</option>
+                <option value="3">3 יחידות</option>
+                <option value="4">4 יחידות</option>
+                <option value="5">5 יחידות</option>
+              </select>
+            </div>
+            <div class="field" style="margin-bottom:14px">
+              <label>מחיר הדיל (₪)</label>
+              <input type="number" id="deal-price" placeholder="למשל: 230" oninput="updateDealPreview()"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text);font-family:Heebo,sans-serif;font-size:14px" />
+            </div>
+            <div id="deal-preview" style="display:none;background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.25);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;font-size:13px;color:var(--text-dim);line-height:1.7"></div>
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+              <button onclick="closeDealModal()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);padding:10px 18px;border-radius:var(--radius-sm);cursor:pointer;font-family:Heebo,sans-serif">ביטול</button>
+              <button onclick="addDealVariation()" style="background:var(--accent);border:none;color:white;padding:10px 18px;border-radius:var(--radius-sm);cursor:pointer;font-family:Heebo,sans-serif;font-weight:600">הוסף דיל</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-section">
+        <div class="section-label">קטגוריות</div>
+        <div class="cat-dropdown-wrap" id="catDropdownWrap">
+          <input type="text" id="catSearch" placeholder="חפש קטגוריה..."
+            oninput="filterCatList()" onfocus="openCatDropdown()" autocomplete="off"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text);font-family:Heebo,sans-serif;font-size:14px;outline:none" />
+          <div class="cat-dropdown-list" id="catDropdownList"></div>
+        </div>
+        <div class="selected-categories" id="selectedCats"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-section">
+        <div class="section-label">תמונות</div>
+        <div class="url-row">
+          <input type="text" id="productUrl" placeholder="URL של דף מוצר לחילוץ תמונה..." />
+          <button class="btn-scrape" onclick="scrapeUrl()">⬇️ חלץ</button>
+        </div>
+        <div class="url-or-divider">או העלה ידנית</div>
+        <div class="image-drop" id="imageDrop">
+          <input type="file" id="imageInput" accept="image/*" multiple onchange="handleFiles(this.files)" />
+          <div style="font-size:28px;margin-bottom:8px">🖼️</div>
+          <div class="text-sm" style="color:var(--text-dim)">גרור תמונות לכאן או לחץ לבחירה</div>
+        </div>
+        <div class="image-preview-list" id="imagePreview"></div>
+      </div>
+
+    </div>
+
+    <div id="changesSummary" style="
+      display:none;
+      margin: 0 24px 16px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-dim);
+      font-size: 13px;
+    ">
+      לא זוהו שינויים
+    </div>
+
+    <div class="action-bar" id="actionBar" style="display:none">
+      <button class="btn-save" id="btnSaveSingle" onclick="saveCurrent()">
+        💾 שמור שינויים
+      </button>
+      <button class="btn-save-all" id="btnSaveAll" onclick="saveAll()" style="display:none">
+        ✅ שמור הכל
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="progress-overlay" id="progressOverlay">
+  <div class="progress-box">
+    <div class="progress-title">⏳ מעדכן מוצרים...</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-log" id="progressLog" style="max-height:320px;overflow-y:auto"></div>
+    <button class="btn-close-progress" id="btnCloseProgress" onclick="closeProgress()">סגור</button>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const VALID_WEIGHTS = {{ weights | tojson }};
+const ALL_CATEGORIES = {{ categories | tojson }};
+const BRANDS = {{ brands_dict | tojson }};
+
+let selectedProducts   = [];
+let currentIdx         = 0;
+let selectedCategories = [];
+let uploadedImages     = [];
+let allImages          = [];
+let selectedImageIdx   = null;
+let currentLabel       = '';
+let currentProduct     = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  populateBrands();
+
+  const params = new URLSearchParams(window.location.search);
+  const raw    = params.get('products');
+
+  if (raw) {
+    try {
+      selectedProducts = JSON.parse(decodeURIComponent(raw));
+    } catch(e) {}
+  }
+
+  if (selectedProducts.length) {
+    buildTabs();
+    loadProduct(0);
+  } else {
+    document.getElementById('listTitle').textContent = 'חפש מוצר';
+    document.getElementById('listSubtitle').textContent = 'הקלד שם מוצר';
+    document.getElementById('searchMode').style.display = 'block';
+  }
+
+  setupDragDrop();
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#catDropdownWrap')) closeCatDropdown();
+  });
+});
+
+function buildTabs() {
+  const tabs = document.getElementById('productTabs');
+  tabs.innerHTML = '';
+  selectedProducts.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'product-tab' + (i === 0 ? ' active' : '');
+    btn.innerHTML = `<span class="tab-name">${p.name || '#' + p.id}</span>`;
+    btn.onclick = () => loadProduct(i);
+    tabs.appendChild(btn);
+  });
+
+  if (selectedProducts.length > 1) {
+    document.getElementById('btnSaveAll').style.display = 'block';
+  }
+
+  document.getElementById('listTitle').textContent = `${selectedProducts.length} מוצרים נבחרו`;
+  document.getElementById('listSubtitle').textContent = 'לחץ טאב לעבור בין מוצרים';
+  document.getElementById('searchMode').style.display = 'none';
+}
+
+async function loadProduct(idx) {
+  currentIdx = idx;
+
+  document.querySelectorAll('.product-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+  });
+
+  const p = selectedProducts[idx];
+  if (!p) return;
+
+  document.getElementById('panelEmpty').style.display = 'none';
+  document.getElementById('formScroll').style.display = 'block';
+  document.getElementById('actionBar').style.display = 'flex';
+  document.getElementById('changesSummary').style.display = 'block';
+  document.getElementById('formTitle').textContent = p.name || `מוצר #${p.id}`;
+  document.getElementById('formSubtitle').textContent = `#${p.id}`;
+
+  currentProduct = p;
+  currentLabel   = p.label || '';
+  selectedCategories = [];
+  uploadedImages = [];
+  allImages      = [];
+  selectedImageIdx = null;
+
+  currentProduct._original = {
+    title: String(p.name || ''),
+    price: String(p.price || ''),
+    price_discount: String(p.price_discount || ''),
+    status: String(p.status || '1'),
+    desc: String(p.desc || ''),
+    brand_value: String(p.brand_value || ''),
+    category_ids: [
+      ...(p.cat_main && p.cat_main.id ? [String(p.cat_main.id)] : []),
+      ...((p.categories || []).map(c => String(c.id)))
+    ].filter(Boolean)
+  };
+
+  document.getElementById('f-title').value          = p.name || '';
+  document.getElementById('f-price').value          = p.price || '';
+  document.getElementById('f-price-discount').value = p.price_discount || '';
+  document.getElementById('f-status').value         = p.status || '1';
+  document.getElementById('f-desc').value           = p.desc || '';
+  document.getElementById('f-brand').value          = p.brand_value || '';
+
+  const varList = document.getElementById('variationsList');
+  varList.innerHTML = '';
+  if (p.variations && p.variations.length) {
+    p.variations.forEach(v => {
+
+      addVariation({
+        title:               v.title || '',
+        price:               v.price || '',
+        price_discount:      v.price_discount || '',
+        weight:              v.weight || '',
+        isDeal:              v.isDeal || false,
+        _existingIdx:        v.idx,
+        _variationId:        v.id || '',
+        _origTitle:          v.title || '',
+        _origPrice:          v.price || '',
+        _origPriceDiscount:  v.price_discount || '',
+        _origWeight:         v.weight || '',
+      });
+    });
+  }
+
+  selectedCategories = [];
+  if (p.cat_main && p.cat_main.id) {
+    const name = extractCatName(p.cat_main.name);
+    selectedCategories.push({ id: String(p.cat_main.id), name });
+  }
+  if (p.categories && p.categories.length) {
+    p.categories.forEach(c => {
+      if (!selectedCategories.find(x => x.id === String(c.id))) {
+        selectedCategories.push({ id: String(c.id), name: c.name });
+      }
+    });
+  }
+  renderCategories();
+
+  if (p.cover_url) {
+    allImages = [{ url: p.cover_url, isExisting: true }];
+    selectedImageIdx = 0;
+  } else {
+    allImages = [];
+    selectedImageIdx = null;
+  }
+  renderImagePreview();
+
+  document.getElementById('formScroll').scrollTo({ top: 0, behavior: 'smooth' });
+
+  bindChangeTracking();
+  refreshChangesSummary();
+}
+
+function extractCatName(fullName) {
+  const m = (fullName || '').match(/\] (.+)$/);
+  return m ? m[1].trim() : (fullName || '');
+}
+
+async function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+
+  const btn = document.getElementById('searchBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  document.getElementById('searchResults').innerHTML = '<div class="loading-row"><span class="spinner"></span> מחפש...</div>';
+
+  try {
+    const res = await fetch('/api/update/search', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ query: q })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    renderSearchResults(data.products || []);
+  } catch(e) {
+    document.getElementById('searchResults').innerHTML = `<div class="loading-row" style="color:var(--red)">⚠️ ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'חפש';
+  }
+}
+
+let _searchProducts = [];
+let _selectedIdxs   = new Set();
+
+function renderSearchResults(products) {
+  _searchProducts = products;
+  _selectedIdxs   = new Set();
+  const el = document.getElementById('searchResults');
+  if (!products.length) {
+    el.innerHTML = '<div class="no-results">לא נמצאו מוצרים</div>';
+    updateProceedBtn();
+    return;
+  }
+  el.innerHTML = products.map((p, i) => `
+    <div class="result-item" id="ri-${i}" onclick="toggleSelect(${i})">
+      ${p.image ? `<img class="result-img" src="${p.image}" alt="">` : `<div class="result-img" style="background:var(--bg);border-radius:6px;border:1px solid var(--border)"></div>`}
+      <div class="result-info">
+        <div class="result-name">${p.name}</div>
+        <div class="result-meta">#${p.id} ${p.price ? '• ₪'+p.price : ''}</div>
+      </div>
+      <div class="result-check" id="rc-${i}"></div>
+    </div>
+  `).join('') + `
+  <div style="margin-top:16px">
+    <button id="proceedBtn" class="btn-proceed" onclick="proceedToEdit()" style="display:none">
+      ✏️ ערוך נבחרים (<span id="selectedCount">0</span>)
+    </button>
+  </div>`;
+  updateProceedBtn();
+}
+
+function toggleSelect(i) {
+  if (_selectedIdxs.has(i)) {
+    _selectedIdxs.delete(i);
+    document.getElementById(`ri-${i}`)?.classList.remove('selected');
+    document.getElementById(`rc-${i}`).innerHTML = '';
+  } else {
+    _selectedIdxs.add(i);
+    document.getElementById(`ri-${i}`)?.classList.add('selected');
+    document.getElementById(`rc-${i}`).innerHTML = '✓';
+  }
+  updateProceedBtn();
+}
+
+function updateProceedBtn() {
+  const btn = document.getElementById('proceedBtn');
+  const cnt = document.getElementById('selectedCount');
+  if (!btn) return;
+  const n = _selectedIdxs.size;
+  if (n > 0) {
+    btn.style.display = 'block';
+    cnt.textContent   = n;
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+async function proceedToEdit() {
+  const btn = document.getElementById('proceedBtn');
+  btn.disabled = true;
+  btn.textContent = 'טוען פרטים...';
+
+  const chosen = [..._selectedIdxs].map(i => _searchProducts[i]);
+  const enriched = [];
+
+  for (const p of chosen) {
+    try {
+      const res  = await fetch('/api/update/fetch', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({product: p})
+      });
+      const data = await res.json();
+      enriched.push(data.product || p);
+    } catch(e) {
+      enriched.push(p);
+    }
+  }
+
+  selectedProducts = enriched;
+  buildTabs();
+  loadProduct(0);
+}
+
+function collectFormData() {
+  const p = currentProduct || {};
+  const brandValue = document.getElementById('f-brand').value || '';
+  const currentCategoryIds = selectedCategories.map(c => String(c.id));
+
+  const formData = {
+    id:             p.id,
+    url:            p.url,
+    name:           p.name,
+    title:          document.getElementById('f-title').value.trim(),
+    price:          document.getElementById('f-price').value.trim(),
+    price_discount: document.getElementById('f-price-discount').value.trim(),
+    status:         parseInt(document.getElementById('f-status').value),
+    desc:           document.getElementById('f-desc').value.trim(),
+    brand_value:    brandValue,
+    variations:     collectVariations(),
+    category_ids:   currentCategoryIds,
+    _newImages:     uploadedImages,
+  };
+
+  const orig = p._original || {};
+  const sortedCurrentCats = [...currentCategoryIds].sort();
+  const sortedOrigCats = [...(orig.category_ids || [])].sort();
+
+  formData._diff = {
+    title:          formData.title !== String(orig.title || ''),
+    price:          formData.price !== String(orig.price || ''),
+    price_discount: formData.price_discount !== String(orig.price_discount || ''),
+    status:         String(formData.status) !== String(orig.status || ''),
+    desc:           formData.desc !== String(orig.desc || ''),
+    brand_value:    String(formData.brand_value || '') !== String(orig.brand_value || ''),
+    categories:     JSON.stringify(sortedCurrentCats) !== JSON.stringify(sortedOrigCats),
+    variations:     formData.variations.length > 0,
+    images:         uploadedImages.length > 0,
+  };
+
+  return formData;
+}
+
+function collectVariations() {
+  return Array.from(document.querySelectorAll('.variation-item')).map((item) => {
+    const existingIdx  = item.dataset.existingIdx;
+    const variationId  = item.dataset.variationId || '';
+    const isDeal       = item.dataset.isDeal === '1';
+    const isNew        = existingIdx === undefined;
+
+    const title          = item.querySelector('.var-title')?.value.trim() || '';
+    const price          = item.querySelector('.var-price')?.value.trim() || '';
+    const price_discount = item.querySelector('.var-discount')?.value.trim() || '';
+    const weight         = item.querySelector('.var-weight')?.value || '';
+
+    if (isNew) {
+      return {
+        idx: null,
+        id: '',
+        title,
+        price,
+        price_discount,
+        weight,
+        isDeal
+      };
+    }
+
+    const origTitle         = item.dataset.origTitle || '';
+    const origPrice         = item.dataset.origPrice || '';
+    const origPriceDiscount = item.dataset.origPriceDiscount || '';
+    const origWeight        = item.dataset.origWeight || '';
+
+    const changed = (
+      title          !== origTitle ||
+      price          !== origPrice ||
+      price_discount !== origPriceDiscount ||
+      weight         !== origWeight
+    );
+
+    if (!changed) return null;
+
+    return {
+      idx: parseInt(existingIdx),
+      id: variationId,
+      title,
+      _origTitle: origTitle,
+      price,
+      price_discount,
+      weight,
+      _origWeight: origWeight,
+      isDeal
+    };
+  }).filter(v => v && v.price);
+}
+
+function renderChangesSummary(formData) {
+  const box = document.getElementById('changesSummary');
+  if (!box) return;
+
+  const d = formData?._diff || {};
+  const changed = [];
+
+  if (d.title) changed.push('שם מוצר');
+  if (d.brand_value) changed.push('מותג');
+  if (d.price) changed.push('מחיר');
+  if (d.price_discount) changed.push('מחיר מבצע');
+  if (d.status) changed.push('סטטוס');
+  if (d.desc) changed.push('תיאור');
+  if (d.categories) changed.push('קטגוריות');
+  if (d.variations) changed.push('וריאציות');
+  if (d.images) changed.push('תמונות');
+
+  if (!changed.length) {
+    box.innerHTML = 'לא זוהו שינויים';
+    return;
+  }
+
+  box.innerHTML = `שדות שהשתנו: ${changed.join(' | ')}`;
+}
+
+function refreshChangesSummary() {
+  renderChangesSummary(collectFormData());
+}
+
+function bindChangeTracking() {
+  const ids = ['f-title', 'f-price', 'f-price-discount', 'f-status', 'f-desc', 'f-brand'];
+
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.oninput = refreshChangesSummary;
+    el.onchange = refreshChangesSummary;
+  });
+}
+
+async function saveCurrent() {
+  const formData = collectFormData();
+  if (!formData.id) return showToast('⚠️ לא נבחר מוצר', 'error');
+  await runUpdate([formData]);
+}
+
+async function saveAll() {
+  const all = selectedProducts.map((p, i) => {
+    currentIdx = i;
+    currentProduct = p;
+    return collectFormData();
+  });
+  await runUpdate(all);
+}
+
+async function runUpdate(updates) {
+  const overlay = document.getElementById('progressOverlay');
+  const log     = document.getElementById('progressLog');
+  const closeBtn = document.getElementById('btnCloseProgress');
+
+  overlay.style.display = 'flex';
+  log.innerHTML = '';
+  closeBtn.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/update/start', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ updates })
+    });
+    const { job_id } = await res.json();
+
+    const ev = new EventSource(`/api/update/progress/${job_id}`);
+    ev.onmessage = e => {
+      const d = JSON.parse(e.data);
+
+      if (d.status === 'done') {
+        ev.close();
+        closeBtn.style.display = 'block';
+        if (d.message) {
+          log.innerHTML += `<div class="done">${d.message}</div>`;
+        }
+        log.innerHTML += `<div class="done" style="margin-top:8px;font-size:15px">✅ הזרימה הושלמה — השינויים גלויים בדפדפן, לא נשמרו לאתר</div>`;
+        log.scrollTop = log.scrollHeight;
+        return;
+      }
+
+      if (d.status === 'error' || d.status === 'timeout') {
+        ev.close();
+        closeBtn.style.display = 'block';
+        log.innerHTML += `<div class="err">❌ ${d.message || 'שגיאה'}</div>`;
+        log.scrollTop = log.scrollHeight;
+        return;
+      }
+
+      const msg = d.message || '';
+      if (!msg) return;
+      const isErr  = msg.includes('⚠️') || msg.includes('❌');
+      const isDone = msg.includes('✅');
+      const isInfo = msg.includes('ℹ️') || msg.includes('🔍') || msg.includes('👁️');
+      const cls = isErr ? 'err' : isDone ? 'done' : isInfo ? 'info' : '';
+      log.innerHTML += `<div class="${cls}">${msg}</div>`;
+
+      if (d.progress != null) {
+        const bar = document.getElementById('progressBar');
+        if (bar) bar.style.width = d.progress + '%';
+      }
+      log.scrollTop = log.scrollHeight;
+    };
+
+    ev.onerror = () => {
+      ev.close();
+      closeBtn.style.display = 'block';
+      log.innerHTML += `<div class="err">⚠️ חיבור ל-SSE נותק</div>`;
+    };
+  } catch(e) {
+    log.innerHTML = `<div class="err">⚠️ ${e.message}</div>`;
+    closeBtn.style.display = 'block';
+  }
+}
+
+function closeProgress() {
+  document.getElementById('progressOverlay').style.display = 'none';
+  showToast('✅ עדכון הסתיים', 'success');
+}
+
+function populateBrands() {
+  const sel = document.getElementById('f-brand');
+  Object.entries(BRANDS).forEach(([id, name]) => {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = name;
+    opt.dataset.name = name;
+    sel.appendChild(opt);
+  });
+}
+
+function onBrandSelect() {
+  refreshChangesSummary();
+}
+
+function normalizeWeight(w) {
+  if (!w) return '';
+  w = w.trim();
+  const normalize = s => s.replace(/״|"/g, '"').replace(/׳|'/g, "'").trim();
+  const nw = normalize(w);
+  const found = VALID_WEIGHTS.find(vw => normalize(vw) === nw);
+  return found || w;
+}
+
+function addVariation(prefill = {}) {
+  const list = document.getElementById('variationsList');
+  const prefillWeight = normalizeWeight((prefill.weight || '').trim());
+  const normalize = s => s.replace(/״|"/g, '"').replace(/׳|'/g, "'").trim();
+  const allWeights = [...VALID_WEIGHTS];
+
+  if (prefillWeight && !allWeights.some(w => normalize(w) === normalize(prefillWeight))) {
+    allWeights.unshift(prefillWeight);
+  }
+
+  const item = document.createElement('div')
+  item.className = 'variation-item'
+
+if (prefill._variationId)
+  item.dataset.variationId = prefill._variationId;
+
+  const weightOptions = allWeights.map(w =>
+    `<option value="${w}" ${normalize(w) === normalize(prefillWeight) ? 'selected' : ''}>${w}</option>`
+  ).join('');
+
+  const isDeal = prefill.isDeal || false;
+
+
+  if (isDeal) item.dataset.isDeal = '1';
+  if (prefill._existingIdx !== undefined) item.dataset.existingIdx = prefill._existingIdx;
+  if (prefill._origTitle !== undefined)          item.dataset.origTitle         = prefill._origTitle;
+  if (prefill._origPrice !== undefined)          item.dataset.origPrice         = prefill._origPrice;
+  if (prefill._origPriceDiscount !== undefined)  item.dataset.origPriceDiscount = prefill._origPriceDiscount;
+  if (prefill._origWeight !== undefined)         item.dataset.origWeight        = prefill._origWeight;
+
+  item.innerHTML = `
+    <div class="var-labels">
+      <span>כותרת</span><span>מחיר</span><span>משקל</span><span></span>
+    </div>
+    <div class="var-row">
+      <input class="var-title" type="text" value="${escHtml(prefill.title || '')}" placeholder="שם הוריאציה" ${isDeal ? 'readonly' : ''} />
+      <input class="var-price" type="number" value="${prefill.price || ''}" placeholder="₪" />
+      <select class="var-weight" ${isDeal ? 'disabled' : ''}>${weightOptions}</select>
+      <button class="btn-remove-var" onclick="removeVariation(this)" title="מחק">✕</button>
+    </div>
+    <div class="var-discount-row">
+      <label>מחיר מבצע:</label>
+      <input class="var-discount" type="number" value="${prefill.price_discount || ''}" placeholder="ריק = ללא" />
+    </div>
+  `;
+
+  list.appendChild(item);
+
+  item.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', refreshChangesSummary);
+    el.addEventListener('change', refreshChangesSummary);
+  });
+
+  refreshChangesSummary();
+}
+
+function removeVariation(btn) {
+  btn.closest('.variation-item').remove();
+  refreshChangesSummary();
+}
+
+function openDealModal() {
+  const vars = Array.from(document.querySelectorAll('.variation-item:not([data-is-deal])'));
+  if (!vars.length) return showToast('הוסף קודם וריאציה בסיסית', 'error');
+  const sel = document.getElementById('deal-base-var');
+  sel.innerHTML = vars.map((item, i) => {
+    const t = item.querySelector('.var-title')?.value || '';
+    const w = item.querySelector('.var-weight')?.value || '';
+    const p = item.querySelector('.var-price')?.value || '';
+    return `<option value="${i}">${w || t} — ₪${p}</option>`;
+  }).join('');
+  document.getElementById('deal-price').value = '';
+  document.getElementById('deal-preview').style.display = 'none';
+  document.getElementById('dealModal').classList.add('open');
+}
+
+function closeDealModal() {
+  document.getElementById('dealModal').classList.remove('open');
+}
+
+function updateDealPreview() {
+  const qty   = parseInt(document.getElementById('deal-qty').value);
+  const price = parseFloat(document.getElementById('deal-price').value);
+  const vars  = Array.from(document.querySelectorAll('.variation-item:not([data-is-deal])'));
+  const idx   = parseInt(document.getElementById('deal-base-var').value);
+  const base  = vars[idx];
+  if (!base || !price) {
+    document.getElementById('deal-preview').style.display='none';
+    return;
+  }
+  const basePrice = parseFloat(base.querySelector('.var-price')?.value || 0);
+  const saving    = Math.round(basePrice * qty - price);
+  const savingStr = saving > 0 ? ` (חיסכון ₪${saving})` : '';
+  const w = base.dataset.origWeight || base.querySelector('.var-weight')?.value || '';
+  document.getElementById('deal-preview').style.display = 'block';
+  document.getElementById('deal-preview').innerHTML =
+    `💥 דיל ${qty} יח' ${w ? 'של ' + w : ''} ב-₪${price}${savingStr}`;
+}
+
+function _safeTitle(t) {
+  return String(t || '').replace(/"/g, '״').substring(0, 100);
+}
+function _calcCombinedWeight(weight, qty) {
+  if (!weight) return '';
+
+  const match = String(weight).match(/([\d.]+)\s*(.*)/);
+  if (!match) return weight;
+
+  let val = parseFloat(match[1]) * qty;
+  let unit = match[2].trim();
+
+  if (unit === 'גרם' && val >= 1000) {
+    val = val / 1000;
+    unit = 'ק"ג';
+  }
+
+  const formatted = Number.isInteger(val) ? val : parseFloat(val.toFixed(2));
+  return `${formatted} ${unit}`;
+}
+function _dealBaseLabel(v) { return v.weight || v.title || '₪'+v.price; }
+
+function addDealVariation() {
+  const qty   = parseInt(document.getElementById('deal-qty').value);
+  const price = document.getElementById('deal-price').value.trim();
+
+  if (!price) return showToast('הזן מחיר לדיל', 'error');
+
+  const vars = Array.from(document.querySelectorAll('.variation-item:not([data-is-deal])'));
+  const idx  = parseInt(document.getElementById('deal-base-var').value);
+  const base = vars[idx];
+  if (!base) return;
+
+  const basePrice = parseFloat(base.querySelector('.var-price')?.value || 0);
+  const baseWeight = base.dataset.origWeight || base.querySelector('.var-weight')?.value || '';
+  const productTitle = document.getElementById('f-title').value.trim();
+
+  const combinedWeight = normalizeWeight(_calcCombinedWeight(baseWeight, qty));
+  const saving = basePrice ? Math.round(basePrice * qty - parseFloat(price)) : 0;
+  const savingStr = saving > 0 ? ` (חיסכון של ₪${saving})` : '';
+
+  const dealTitle = _safeTitle(
+    `💥${productTitle} ${baseWeight} דיל ${qty} יח' – ₪${price}${savingStr}`
+  );
+
+  addVariation({
+    title: dealTitle,
+    price,
+    weight: combinedWeight || baseWeight,
+    isDeal: true
+  });
+
+  closeDealModal();
+  refreshChangesSummary();
+}
+
+function openCatDropdown() {
+  filterCatList();
+  document.getElementById('catDropdownList').classList.add('open');
+}
+
+function closeCatDropdown() {
+  document.getElementById('catDropdownList').classList.remove('open');
+}
+
+function filterCatList() {
+  const q  = document.getElementById('catSearch').value.toLowerCase();
+  const el = document.getElementById('catDropdownList');
+  const entries = Object.entries(ALL_CATEGORIES)
+    .filter(([id, name]) => !q || name.toLowerCase().includes(q))
+    .slice(0, 50);
+
+  el.innerHTML = entries.map(([id, name]) =>
+    `<div class="cat-option" onclick="selectCategory('${id}','${escHtml(name)}')">${name}</div>`
+  ).join('');
+  el.classList.add('open');
+}
+
+function selectCategory(id, name) {
+  if (!selectedCategories.find(c => c.id === String(id))) {
+    selectedCategories.push({ id: String(id), name });
+    renderCategories();
+  }
+  document.getElementById('catSearch').value = '';
+  closeCatDropdown();
+  refreshChangesSummary();
+}
+
+function removeCategory(id) {
+  selectedCategories = selectedCategories.filter(c => c.id !== id);
+  renderCategories();
+  refreshChangesSummary();
+}
+
+function renderCategories() {
+  document.getElementById('selectedCats').innerHTML = selectedCategories.map((c, i) => {
+    const safeId = String(c.id).replace(/'/g, "\\'");
+    return `
+      <div class="cat-tag">
+        ${i === 0 ? '🔵 ' : '🟡 '}${c.name}
+        <button onclick="removeCategory('${safeId}')">×</button>
+      </div>
+    `;
+  }).join('');
+  refreshChangesSummary();
+}
+
+function setupDragDrop() {
+  const drop = document.getElementById('imageDrop');
+  if (!drop) return;
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.style.borderColor='var(--accent)'; });
+  drop.addEventListener('dragleave', () => { drop.style.borderColor=''; });
+  drop.addEventListener('drop', e => { e.preventDefault(); drop.style.borderColor=''; handleFiles(e.dataTransfer.files); });
+}
+
+function handleFiles(files) {
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const data = e.target.result;
+      uploadedImages.push(data);
+      allImages.push({ url: data, isNew: true });
+      if (selectedImageIdx === null) selectedImageIdx = allImages.length - 1;
+      renderImagePreview();
+      refreshChangesSummary();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function removeImage(i) {
+  const removed = allImages[i];
+  allImages.splice(i, 1);
+
+  if (removed?.isNew) {
+    const newIndex = uploadedImages.indexOf(removed.url);
+    if (newIndex !== -1) uploadedImages.splice(newIndex, 1);
+  }
+
+  if (selectedImageIdx >= allImages.length) selectedImageIdx = allImages.length - 1;
+  if (allImages.length === 0) selectedImageIdx = null;
+
+  renderImagePreview();
+  refreshChangesSummary();
+}
+
+function renderImagePreview() {
+  const el = document.getElementById('imagePreview');
+  el.innerHTML = allImages.map((img, i) =>
+    `<div class="img-thumb-wrap">
+      <img class="img-thumb ${i === selectedImageIdx ? 'selected' : ''}"
+        src="${img.url}" onclick="selectImage(${i})" />
+      ${img.isNew ? `<button class="img-remove" onclick="removeImage(${i})">✕</button>` : ''}
+    </div>`
+  ).join('');
+}
+
+function selectImage(i) {
+  selectedImageIdx = i;
+  renderImagePreview();
+}
+
+async function scrapeUrl() {
+  const url = document.getElementById('productUrl').value.trim();
+  if (!url) return;
+  showToast('מחלץ תמונה...', 'info');
+
+  try {
+    const res = await fetch('/api/scrape-url', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({url})
+    });
+    const data = await res.json();
+    if (data.images && data.images.length) {
+      data.images.forEach(u => allImages.push({ url: u }));
+      if (selectedImageIdx === null) selectedImageIdx = 0;
+      renderImagePreview();
+      refreshChangesSummary();
+      showToast(`✅ נמצאו ${data.images.length} תמונות`, 'success');
+    }
+  } catch(e) {
+    showToast('⚠️ שגיאה בחילוץ', 'error');
+  }
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function showToast(msg, type = 'info', duration = 3000) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), duration);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Petway – יצירת מוצר</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=Assistant:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0f14;
+      --surface:   #161a23;
+      --surface2:  #1e2330;
+      --border:    #2a3040;
+      --accent:    #f97316;
+      --accent2:   #fb923c;
+      --text:      #e8ecf3;
+      --text-dim:  #8896aa;
+      --text-faint:#4a5568;
+      --green:     #22c55e;
+      --red:       #ef4444;
+      --radius:    14px;
+      --radius-sm: 8px;
+      --shadow:    0 4px 24px rgba(0,0,0,0.4);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      direction: rtl;
+    }
+
+    /* ── Layout ── */
+    .app {
+      display: grid;
+      grid-template-rows: 64px 1fr;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      gap: 16px;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+
+    .header-badge {
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .header-spacer { flex: 1; }
+
+    .btn-add-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      font-family: 'Heebo', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-add-header:hover {
+      background: var(--accent2);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(249,115,22,0.35);
+    }
+
+    /* ── Main columns ── */
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      overflow: hidden;
+      gap: 0;
+    }
+
+    /* ── Chat Panel ── */
+    .chat-panel {
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .panel-icon {
+      width: 36px; height: 36px;
+      background: rgba(249,115,22,0.12);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+
+    .panel-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .panel-subtitle {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-track { background: transparent; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .msg {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      line-height: 1.6;
+      animation: msgIn 0.25s ease;
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-bot {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      align-self: flex-start;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-user {
+      background: var(--accent);
+      color: white;
+      align-self: flex-end;
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg-system {
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.25);
+      color: var(--green);
+      align-self: center;
+      font-size: 13px;
+      text-align: center;
+      max-width: 100%;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      padding: 14px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      border-bottom-right-radius: 4px;
+      align-self: flex-start;
+      width: fit-content;
+    }
+
+    .typing-dot {
+      width: 7px; height: 7px;
+      background: var(--text-dim);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-6px); }
+    }
+
+    .chat-input-area {
+      padding: 16px 24px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      resize: none;
+      height: 48px;
+      transition: border-color 0.2s;
+      direction: rtl;
+    }
+    .chat-input:focus { border-color: var(--accent); }
+    .chat-input::placeholder { color: var(--text-faint); }
+
+    .btn-send {
+      width: 48px; height: 48px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-send:hover { background: var(--accent2); transform: scale(1.05); }
+    .btn-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* ── Form Panel ── */
+    .form-panel {
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .form-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+    }
+
+    .form-scroll::-webkit-scrollbar { width: 4px; }
+    .form-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── Form Sections ── */
+    .form-section {
+      margin-bottom: 24px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      direction: rtl;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus { border-color: var(--accent); }
+
+    .field select option { background: var(--surface2); }
+    .field textarea { resize: vertical; min-height: 80px; }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* ── Variations ── */
+    .variations-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .variation-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 1fr 80px 80px 100px auto;
+      gap: 8px;
+      align-items: center;
+      animation: msgIn 0.2s ease;
+    }
+
+    .variation-item input,
+    .variation-item select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      width: 100%;
+      direction: rtl;
+    }
+
+    .btn-remove-var {
+      width: 30px; height: 30px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 6px;
+      color: var(--red);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .btn-remove-var:hover { background: rgba(239,68,68,0.2); }
+
+    .btn-add-var {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 16px;
+      color: var(--text-dim);
+      font-family: 'Heebo', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+      justify-content: center;
+    }
+    .btn-add-var:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Categories ── */
+    .category-search-wrap { position: relative; }
+
+    .category-results {
+      position: absolute;
+      top: 100%;
+      right: 0; left: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 50;
+      display: none;
+    }
+
+    .category-result-item {
+      padding: 10px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .category-result-item:hover { background: var(--surface2); color: var(--accent); }
+
+    .selected-categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .cat-tag {
+      background: rgba(249,115,22,0.12);
+      border: 1px solid rgba(249,115,22,0.25);
+      color: var(--accent);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cat-tag button {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+    }
+
+    /* ── Image Upload ── */
+    .image-drop {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .image-drop:hover, .image-drop.drag-over {
+      border-color: var(--accent);
+      background: rgba(249,115,22,0.04);
+    }
+
+    .image-drop input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .image-preview-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .img-thumb {
+      position: relative;
+      width: 72px; height: 72px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .img-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .img-thumb-remove {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      background: rgba(0,0,0,0.7);
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── URL Scrape ── */
+    .url-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .url-row input { flex: 1; }
+
+    .btn-scrape {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0 14px;
+      color: var(--text-dim);
+      font-family: 'Heebo', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-scrape:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Action Bar ── */
+    .action-bar {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-primary {
+      flex: 1;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 13px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary:hover {
+      background: var(--accent2);
+      box-shadow: 0 4px 20px rgba(249,115,22,0.35);
+    }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 13px 20px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--text-dim); color: var(--text); }
+
+    /* ── Toast ── */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .toast {
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 600;
+      animation: toastIn 0.3s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .toast-success { background: #166534; border: 1px solid #22c55e; color: #86efac; }
+    .toast-error   { background: #7f1d1d; border: 1px solid #ef4444; color: #fca5a5; }
+    .toast-info    { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Loading Spinner ── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 20px 0;
+    }
+
+    /* ── Preview Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      max-width: 680px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow);
+      transform: translateY(20px);
+      transition: transform 0.2s;
+    }
+
+    .modal-overlay.open .modal { transform: translateY(0); }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title { font-size: 16px; font-weight: 700; }
+
+    .modal-close {
+      width: 32px; height: 32px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .modal-body { padding: 24px; }
+
+    .preview-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+    .preview-key {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-dim);
+      min-width: 100px;
+      padding-top: 2px;
+    }
+
+    .preview-val {
+      font-size: 14px;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+      .chat-panel { border-left: none; border-bottom: 1px solid var(--border); }
+      .variation-item { grid-template-columns: 1fr 70px 70px 90px auto; }
+    }
+
+    @media (max-width: 600px) {
+      .variation-item { grid-template-columns: 1fr 1fr; }
+      .variation-item .var-weight-cell { grid-column: 1 / -1; }
+    }
+
+    /* ── Utility ── */
+    .hidden { display: none !important; }
+    .text-accent { color: var(--accent); }
+    .text-dim { color: var(--text-dim); }
+    .text-sm { font-size: 13px; }
+
+    /* ── Category Dropdown ── */
+    .cat-dropdown-wrap { position: relative; }
+
+    .cat-dropdown-list {
+      position: absolute;
+      top: 100%;
+      right: 0; left: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 50;
+      display: none;
+    }
+
+    .cat-dropdown-list::-webkit-scrollbar { width: 4px; }
+    .cat-dropdown-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .cat-dropdown-item {
+      padding: 10px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .cat-dropdown-item:hover { background: var(--surface2); color: var(--accent); }
+    .cat-dropdown-item.selected { color: var(--accent); opacity: 0.5; cursor: default; }
+
+    .url-or-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 12px 0;
+      color: var(--text-faint);
+      font-size: 12px;
+    }
+    .url-or-divider::before,
+    .url-or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    /* ── Image Thumbnails ── */
+    .img-thumb {
+      position: relative;
+      width: 72px; height: 72px;
+      border-radius: var(--radius-sm);
+      overflow: visible;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      flex-shrink: 0;
+    }
+    .img-thumb > img, .img-thumb > div:first-child {
+      width: 100%; height: 100%;
+      border-radius: 6px;
+      overflow: hidden;
+      display: block;
+    }
+    .img-thumb:hover { border-color: var(--text-dim); }
+    .img-thumb.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(249,115,22,0.3);
+    }
+    .img-thumb.selected::after {
+      content: '✓';
+      position: absolute;
+      inset: 0;
+      background: rgba(249,115,22,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; color: white; font-weight: 800;
+      border-radius: 6px;
+      pointer-events: none;
+    }
+
+    /* ── Hover Preview Popup ── */
+    #imgPreviewPopup {
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      display: none;
+      width: 224px; height: 224px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 2px solid var(--accent);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+      background: #111;
+    }
+    #imgPreviewPopup img {
+      width: 100%; height: 100%; object-fit: contain;
+    }
+    #imgPreviewNoImg {
+      width:100%; height:100%;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      font-size:36px; color:var(--text-dim); gap:6px;
+    }
+    #imgPreviewNoImg span { font-size:12px; }
+
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Header ── -->
+  <header>
+    <div class="logo">Pet<span>way</span></div>
+    <span class="header-badge">AI</span>
+    <div class="header-spacer"></div>
+    <button onclick="window.location.href='/dashboard'" style="background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:8px 16px;border-radius:var(--radius-sm);cursor:pointer;font-family:Heebo,sans-serif;font-size:13px;margin-left:8px">
+      ← לוח בקרה
+    </button>
+    <button class="btn-add-header" onclick="openProductForm()">
+      ➕ מוצר חדש
+    </button>
+  </header>
+
+  <!-- ── Main ── -->
+  <div class="main">
+
+    <!-- ── Chat Panel ── -->
+    <div class="chat-panel">
+      <div class="panel-header">
+        <div class="panel-icon">🤖</div>
+        <div>
+          <div class="panel-title">עוזר AI</div>
+          <div class="panel-subtitle">ספר לי על המוצר — אאסוף הכל</div>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg msg-bot">
+          שלום! 👋 אני כאן לעזור להוסיף מוצרים חדשים לחנות.<br><br>
+          ספר לי על המוצר — שם, מותג ומחיר, ואני אסדר הכל.
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <textarea
+          class="chat-input"
+          id="chatInput"
+          placeholder="לדוגמה: אקאנה ביורגיונל 2 ק&quot;ג ב-89 שקל..."
+          rows="1"
+          onkeydown="handleChatKey(event)"
+        ></textarea>
+        <button class="btn-send" id="sendBtn" onclick="sendChat()">➤</button>
+      </div>
+    </div>
+
+    <!-- ── Form Panel ── -->
+    <div class="form-panel" id="formPanel">
+      <div class="panel-header">
+        <div class="panel-icon">📦</div>
+        <div>
+          <div class="panel-title">פרטי מוצר</div>
+          <div class="panel-subtitle">מלא את הטופס או השתמש בצ'אט</div>
+        </div>
+      </div>
+
+      <div class="form-scroll" id="formScroll">
+
+        <!-- Basic Info -->
+        <div class="form-section">
+          <div class="section-label">מידע בסיסי</div>
+
+          <div class="field">
+            <label>שם המוצר *</label>
+            <input type="text" id="f-title" placeholder="לדוגמה: אקאנה פסיפיק פישה לכלב" />
+          </div>
+
+          <div class="row-2">
+            <div class="field">
+              <label>מותג</label>
+              <select id="f-brand" onchange="onBrandSelect()">
+                <option value="">— בחר מותג —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>מחיר בסיס (₪)</label>
+              <input type="number" id="f-price" placeholder="89" />
+            </div>
+          </div>
+
+          <div class="row-2">
+            <div class="field">
+              <label>מחיר מבצע (₪)</label>
+              <input type="number" id="f-price-discount" placeholder="79" />
+            </div>
+            <div class="field">
+              <label>סטטוס</label>
+              <select id="f-status">
+                <option value="1">פעיל</option>
+                <option value="2">מוסתר</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Variations -->
+        <div class="form-section">
+          <div class="section-label">גדלים / וריאציות</div>
+          <div class="variations-list" id="variationsList"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-add-var" onclick="addVariation()">
+              + הוסף גודל
+            </button>
+            <button class="btn-add-var" onclick="openDealModal()" style="background:rgba(249,115,22,0.12);border-color:var(--accent);color:var(--accent)">
+              💥 דיל יחידות
+            </button>
+          </div>
+
+          <!-- Deal Modal -->
+          <div id="dealModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:center;justify-content:center">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:360px;direction:rtl">
+              <div style="font-size:16px;font-weight:700;margin-bottom:20px">💥 הוסף דיל יחידות</div>
+
+              <div class="field" style="margin-bottom:14px">
+                <label>בסיס — על איזו וריאציה?</label>
+                <select id="deal-base-var" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text);font-family:Heebo,sans-serif;font-size:14px">
+                  <option value="">— בחר וריאציה —</option>
+                </select>
+              </div>
+
+              <div class="field" style="margin-bottom:14px">
+                <label>כמות יחידות</label>
+                <select id="deal-qty" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text);font-family:Heebo,sans-serif;font-size:14px">
+                  <option value="2">2 יחידות</option>
+                  <option value="3">3 יחידות</option>
+                  <option value="4">4 יחידות</option>
+                  <option value="5">5 יחידות</option>
+                </select>
+              </div>
+
+              <div class="field" style="margin-bottom:14px">
+                <label>מחיר הדיל (₪)</label>
+                <input type="number" id="deal-price" placeholder="למשל: 230" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;color:var(--text);font-family:Heebo,sans-serif;font-size:14px" />
+              </div>
+
+              <div id="deal-preview" style="display:none;background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.25);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;font-size:13px;color:var(--text-dim);line-height:1.7">
+              </div>
+
+              <div style="display:flex;gap:10px;justify-content:flex-end">
+                <button onclick="closeDealModal()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);padding:10px 18px;border-radius:var(--radius-sm);cursor:pointer;font-family:Heebo,sans-serif">ביטול</button>
+                <button onclick="addDealVariation()" style="background:var(--accent);border:none;color:white;padding:10px 18px;border-radius:var(--radius-sm);cursor:pointer;font-family:Heebo,sans-serif;font-weight:600">הוסף דיל</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Categories -->
+        <div class="form-section">
+          <div class="section-label">קטגוריות</div>
+          <div class="cat-dropdown-wrap" id="catDropdownWrap">
+            <input
+              type="text"
+              id="catSearch"
+              placeholder="חפש או גלול לבחירת קטגוריה..."
+              oninput="filterCatList()"
+              onfocus="openCatDropdown()"
+              autocomplete="off"
+            />
+            <div class="cat-dropdown-list" id="catDropdownList"></div>
+          </div>
+          <div class="selected-categories" id="selectedCats"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Images -->
+        <div class="form-section">
+          <div class="section-label">תמונות</div>
+
+          <!-- URL scrape option -->
+          <div class="url-row">
+            <input type="text" id="productUrl" placeholder="URL של דף מוצר לחילוץ תמונה..." />
+            <button class="btn-scrape" onclick="scrapeUrl()">⬇️ חלץ</button>
+          </div>
+
+          <div class="url-or-divider">או העלה ידנית</div>
+
+          <div class="image-drop" id="imageDrop">
+            <input type="file" id="imageInput" accept="image/*" multiple onchange="handleFiles(this.files)" />
+            <div style="font-size:28px;margin-bottom:8px">🖼️</div>
+            <div class="text-sm" style="color:var(--text-dim)">גרור תמונות לכאן או לחץ לבחירה</div>
+          </div>
+
+          <div class="image-preview-list" id="imagePreview"></div>
+          <div id="imageSelectHint" style="display:none;font-size:12px;color:var(--text-dim);margin-top:8px">
+            👆 עבור עם העכבר לתצוגה מקדימה • לחץ לבחירה — רק התמונה הנבחרת תועלה
+          </div>
+        </div>
+
+      </div><!-- /form-scroll -->
+
+      <div class="action-bar">
+        <button class="btn-secondary" onclick="clearForm()">נקה</button>
+        <button class="btn-primary" id="generateBtn" onclick="generateContent()">
+          ✨ צור תוכן AI
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ── Image Hover Preview Popup ── -->
+<div id="imgPreviewPopup">
+  <img id="imgPreviewImg" src="" alt="" />
+  <div id="imgPreviewNoImg" style="display:none">🖼️<span>אין תצוגה מקדימה</span></div>
+</div>
+
+<!-- ── Preview Modal ── -->
+<div class="modal-overlay" id="previewModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📋 תצוגה מקדימה לפני העלאה</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="previewBody"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">חזור לעריכה</button>
+      <button class="btn-primary" onclick="uploadProduct()" style="flex:unset;padding:12px 28px">
+        🚀 העלה לאתר
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast Container ── -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ── Weights Data ── -->
+<script>
+const VALID_WEIGHTS = {{ weights | tojson }};
+const ALL_CATEGORIES = {{ categories | tojson }};
+const BRANDS = {{ brands_dict | tojson }};
+
+// נרמול משקל — ממיר כל פורמט ל-VALID_WEIGHTS תקני (3 ק"ג)
+function normalizeWeight(raw) {
+  if (!raw) return '';
+  let s = raw.trim()
+    .replace(/קילוגרם|קילו|ק'ג|קג|kg/gi, 'ק"ג')
+    .replace(/גרם|gr|g(?!ר)/gi, 'גרם')
+    .replace(/״/g, '"').replace(/׳/g, "'");
+  // נרמל רווחים: "3ק"ג" → "3 ק"ג"
+  s = s.replace(/(\d)(ק"ג|גרם)/g, '$1 $2');
+  // חפש התאמה ב-VALID_WEIGHTS
+  const norm = w => w.replace(/״/g, '"').replace(/׳/g, "'").trim();
+  const match = VALID_WEIGHTS.find(w => norm(w) === norm(s));
+  return match || s;
+}
+</script>
+
+<script>
+/* ── Petway Admin JS ── */
+
+// ── State ──
+let selectedCategories = [];
+let uploadedImages = []; // kept for compat
+let allImages = [];       // {path, dataUrl, label}
+let selectedImageIdx = null;
+let currentProduct = null;
+let brandMatchTimer = null;
+let currentLabel = '';  // מתעדכן אוטומטית כשמוסיפים דיל
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', () => {
+  setupDragDrop();
+  populateBrands();
+});
+
+function populateBrands() {
+  const sel = document.getElementById('f-brand');
+  const brands = typeof BRANDS === 'object' ? BRANDS : {};
+  Object.entries(brands).forEach(([name, value]) => {
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = name;
+    opt.dataset.name = name;
+    sel.appendChild(opt);
+  });
+}
+
+function onBrandSelect() {
+  // brand_value כבר נשמר ב-value של ה-select
+}
+
+// ══════════════════════════════════════════════
+// CHAT
+// ══════════════════════════════════════════════
+
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChat();
+  }
+}
+
+function getFormState() {
+  const vars = Array.from(document.querySelectorAll('.variation-item')).map(item => ({
+    title:    item.querySelector('.var-title')?.value.trim() || '',
+    price:    item.querySelector('.var-price')?.value.trim() || '',
+    discount: item.querySelector('.var-discount')?.value.trim() || '',
+    weight:   item.querySelector('.var-weight')?.value || '',
+    isDeal:   item.dataset.isDeal === '1',
+  }));
+  const brandSel = document.getElementById('f-brand');
+  return {
+    title:          document.getElementById('f-title').value.trim(),
+    brand:          brandSel.options[brandSel.selectedIndex]?.dataset.name || '',
+    price:          document.getElementById('f-price').value.trim(),
+    price_discount: document.getElementById('f-price-discount').value.trim(),
+    status:         document.getElementById('f-status').value,
+    label:          currentLabel || '',
+    variations:     vars,
+    category_ids:   selectedCategories.map(c => c.id),
+  };
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  input.value = '';
+  appendMsg('user', msg);
+
+  const sendBtn = document.getElementById('sendBtn');
+  sendBtn.disabled = true;
+
+  const typingEl = showTyping();
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, form_state: getFormState() })
+    });
+    const data = await res.json();
+    typingEl.remove();
+
+    if (data.status === 'ready') {
+      appendMsg('system', '✅ קיבלתי! מעביר פרטים לטופס...');
+      fillFormFromChat(data.data);
+      showToast('פרטי המוצר הועברו לטופס', 'success');
+    } else if (data.status === 'partial') {
+      if (data.data && Object.keys(data.data).length) fillFormFromChat(data.data);
+      if (data.message) appendMsg('bot', data.message);
+    } else if (data.message) {
+      appendMsg('bot', data.message);
+    }
+  } catch (err) {
+    typingEl.remove();
+    appendMsg('bot', '⚠️ שגיאה בתקשורת — נסה שוב');
+  } finally {
+    sendBtn.disabled = false;
+  }
+}
+
+function appendMsg(type, text) {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `msg msg-${type}`;
+  div.innerHTML = text.replace(/\n/g, '<br>');
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTyping() {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'typing-indicator';
+  div.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function fillFormFromChat(data) {
+  if (data.title)         document.getElementById('f-title').value = data.title;
+  if (data.price)         document.getElementById('f-price').value = data.price;
+  if (data.price_discount) document.getElementById('f-price-discount').value = data.price_discount;
+
+  // מותג
+  if (data.brand_value) {
+    document.getElementById('f-brand').value = data.brand_value;
+  } else if (data.brand) {
+    const sel = document.getElementById('f-brand');
+    Array.from(sel.options).forEach(opt => {
+      if (opt.dataset.name === data.brand) sel.value = opt.value;
+    });
+  }
+
+  // תווית דיל
+  if (data.label) {
+    currentLabel = data.label;
+    showToast(`🏷️ תווית דיל: ${data.label}`, 'info', 3000);
+  }
+
+  // וריאציות
+  if (data.variations && data.variations.length) {
+    const list = document.getElementById('variationsList');
+    const productTitle = data.title || document.getElementById('f-title').value.trim();
+
+    // מחיקות — מטפל תחילה
+    data.variations.filter(v => v.delete).forEach(v => {
+      const items = Array.from(list.querySelectorAll('.variation-item'));
+      for (const item of items) {
+        const isDealRow = item.dataset.isDeal === '1';
+        const weightVal = item.querySelector('.var-weight')?.value || '';
+        const normalize = s => s.replace(/״|"/g, '"').replace(/׳|'/g, "'").trim();
+
+        if (v.isDeal && isDealRow) {
+          // מחק דיל — בדוק שאין בסיס חסר
+          const hasDeal = !!list.querySelector('.variation-item[data-is-deal]');
+          if (!hasDeal) currentLabel = '';
+          item.remove();
+          currentLabel = '';
+          break;
+        } else if (v.weight && !isDealRow && normalize(weightVal) === normalize(v.weight)) {
+          // לפני מחיקת בסיס — בדוק אם יש דיל
+          const hasDeal = !!list.querySelector('.variation-item[data-is-deal]');
+          if (hasDeal) {
+            showToast('מחק קודם את שורת הדיל לפני שמוחקים את הבסיס', 'error', 4000);
+            return;
+          }
+          item.remove();
+          break;
+        }
+      }
+    });
+
+    // הוספות — רק אם יש וריאציות חדשות (לא מחיקות)
+    const toAdd = data.variations.filter(v => !v.delete);
+    if (toAdd.length && list.children.length === 0) {
+      const baseVar = toAdd.find(v => !v.isDeal);
+      toAdd.forEach(v => {
+        if (v.isDeal) {
+          const qty = v.qty || 2;
+          const basePrice = baseVar ? parseFloat(baseVar.price) : 0;
+          const dealPrice = parseFloat(v.price);
+          const weight = baseVar ? normalizeWeight(baseVar.weight || '') : '';
+          const combinedWeight = weight ? _calcCombinedWeight(weight, qty) : '';
+          const saving = basePrice ? Math.round(basePrice * qty - dealPrice) : 0;
+          const savingStr = saving > 0 ? ` (חיסכון של ₪${saving})` : '';
+          const weightStr = weight ? ` ${weight}` : '';
+          const title = _safeTitle(`💥${productTitle}${weightStr} דיל ${qty} יח' – ₪${dealPrice}${savingStr}`);
+          addVariation({ title, price: v.price, weight: combinedWeight, isDeal: true });
+        } else {
+          const w = normalizeWeight(v.weight || '');
+          const weightStr = w ? ` ${w}` : '';
+          const title = _safeTitle(`${productTitle}${weightStr}`);
+          addVariation({ title, price: v.price, price_discount: v.price_discount || '', weight: w });
+        }
+      });
+      if (toAdd.some(v => v.isDeal) && data.label) currentLabel = data.label;
+    }
+  }
+
+  // קטגוריות — מוסיף רק חדשות, לא מוחק קיימות
+  // Claude מחזיר IDs — ממירים ל-{id, name} לתצוגה נכונה
+  if (data.category_ids && data.category_ids.length) {
+    data.category_ids.forEach(val => {
+      const strVal = String(val);
+      let id = null, name = null;
+      if (/^\d+$/.test(strVal)) {
+        id = strVal;
+        name = ALL_CATEGORIES[strVal] || ALL_CATEGORIES[parseInt(strVal)] || strVal;
+      } else {
+        name = strVal;
+        const found = Object.entries(ALL_CATEGORIES).find(([k, v]) => v === strVal);
+        id = found ? found[0] : strVal;
+      }
+      if (!selectedCategories.find(c => c.id === id)) {
+        selectedCategories.push({ id, name });
+      }
+    });
+    renderCategories();
+  }
+
+  document.getElementById('formScroll').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ══════════════════════════════════════════════
+// VARIATIONS
+// ══════════════════════════════════════════════
+
+function addVariation(prefill = {}) {
+  const list = document.getElementById('variationsList');
+  const prefillWeight = normalizeWeight((prefill.weight || '').trim());
+
+  // נרמול להשוואה — מאחד גרש וגרש-כפול
+  const normalize = s => s.replace(/״|"/g, '"').replace(/׳|'/g, "'").trim();
+
+  // אם המשקל המבוקש לא ברשימה — נוסיף אותו
+  const allWeights = [...VALID_WEIGHTS];
+  if (prefillWeight && !allWeights.some(w => normalize(w) === normalize(prefillWeight))) {
+    allWeights.unshift(prefillWeight);
+  }
+
+  const weightOptions = allWeights.map(w =>
+    `<option value="${w}" ${normalize(w) === normalize(prefillWeight) ? 'selected' : ''}>${w}</option>`
+  ).join('');
+
+  const div = document.createElement('div');
+  div.className = 'variation-item';
+  if (prefill.isDeal) {
+    div.dataset.isDeal = '1';
+    div.style.borderColor = 'var(--accent)';
+    div.style.background = 'rgba(249,115,22,0.06)';
+  }
+  div.innerHTML = `
+    <input type="text"   placeholder='שם (שקית 2 ק"ג)' value="${(prefill.title || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" class="var-title" />
+    <input type="number" placeholder="מחיר"             value="${prefill.price || ''}" class="var-price" />
+    <input type="number" placeholder="מבצע"             value="${prefill.price_discount || ''}" class="var-discount" />
+    <select class="var-weight var-weight-cell">
+      <option value="">— משקל —</option>
+      ${weightOptions}
+    </select>
+    <button class="btn-remove-var" onclick="removeVariation(this)" title="הסר">✕</button>
+  `;
+  list.appendChild(div);
+}
+
+function removeVariation(btn) {
+  const item = btn.closest('.variation-item');
+  const isDeal = item.dataset.isDeal === '1';
+
+  // אם זו לא שורת דיל — בדוק אם יש דיל שמבוסס עליה
+  if (!isDeal) {
+    const hasDeal = !!document.querySelector('.variation-item[data-is-deal]');
+    if (hasDeal) {
+      showToast('מחק קודם את שורת הדיל לפני שמוחקים את הבסיס', 'error', 4000);
+      return;
+    }
+  }
+
+  item.remove();
+  // אם אין יותר שורות דיל — מאפס את התווית
+  const hasDealLeft = !!document.querySelector('.variation-item[data-is-deal]');
+  if (!hasDealLeft) currentLabel = '';
+}
+
+function getVariations() {
+  const productTitle = document.getElementById('f-title').value.trim();
+  return Array.from(document.querySelectorAll('.variation-item')).map(item => {
+    const title  = item.querySelector('.var-title').value.trim();
+    const price  = item.querySelector('.var-price').value.trim();
+    const weight = item.querySelector('.var-weight').value;
+
+    let autoTitle = title;
+    if (!autoTitle && productTitle) {
+      // הוסף משקל רק אם הוא לא כבר מופיע בשם המוצר
+      const weightInTitle = weight && productTitle.includes(weight);
+      autoTitle = weightInTitle ? productTitle : (weight ? `${productTitle} – ${weight}` : productTitle);
+    }
+
+    return {
+      title:          autoTitle || weight || '',
+      price,
+      price_discount: item.querySelector('.var-discount').value.trim(),
+      weight,
+    };
+  }).filter(v => v.title || v.price);
+}
+
+// ══════════════════════════════════════════════
+// DEAL MODAL
+// ══════════════════════════════════════════════
+
+function _getRawVariations() {
+  return Array.from(document.querySelectorAll('.variation-item')).map(item => ({
+    title:          item.querySelector('.var-title').value.trim(),
+    price:          item.querySelector('.var-price').value.trim(),
+    weight:         item.querySelector('.var-weight').value,
+    price_discount: item.querySelector('.var-discount').value.trim(),
+  })).filter(v => v.price);
+}
+
+function _dealBaseLabel(v) {
+  // תווית הוריאציה לבניית כותרת הדיל — משתמש במשקל ולא בכותרת הארוכה
+  return v.weight || v.title || `₪${v.price}`;
+}
+
+function openDealModal() {
+  const vars = _getRawVariations();
+  if (!vars.length) {
+    showToast('הוסף קודם לפחות וריאציה אחת עם מחיר', 'error');
+    return;
+  }
+  const sel = document.getElementById('deal-base-var');
+  sel.innerHTML = '<option value="">— בחר וריאציה —</option>';
+  vars.forEach((v, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${_dealBaseLabel(v)} — ₪${v.price}`;
+    sel.appendChild(opt);
+  });
+  document.getElementById('deal-price').value = '';
+  document.getElementById('deal-preview').style.display = 'none';
+  document.getElementById('dealModal').style.display = 'flex';
+
+  ['deal-base-var','deal-qty','deal-price'].forEach(id => {
+    document.getElementById(id).oninput = updateDealPreview;
+    document.getElementById(id).onchange = updateDealPreview;
+  });
+}
+
+function closeDealModal() {
+  document.getElementById('dealModal').style.display = 'none';
+}
+
+function updateDealPreview() {
+  const baseIdx = document.getElementById('deal-base-var').value;
+  const qty     = parseInt(document.getElementById('deal-qty').value);
+  const dealPrice = parseFloat(document.getElementById('deal-price').value);
+  const preview = document.getElementById('deal-preview');
+
+  if (baseIdx === '' || !dealPrice) { preview.style.display = 'none'; return; }
+
+  const vars = _getRawVariations();
+  const base = vars[baseIdx];
+  if (!base) { preview.style.display = 'none'; return; }
+
+  const basePrice = parseFloat(base.price);
+  const saving = Math.round(basePrice * qty - dealPrice);
+  const combinedWeight = _calcCombinedWeight(base.weight || '', qty);
+  const productTitle = document.getElementById('f-title').value.trim();
+  const baseLabel = _dealBaseLabel(base);
+  const title = _safeTitle(`💥${productTitle} ${baseLabel} דיל ${qty} יח' – ₪${dealPrice} (חיסכון של ₪${saving})`);
+
+  preview.style.display = 'block';
+  preview.innerHTML = `
+    <div><strong>כותרת:</strong> ${title}</div>
+    <div><strong>משקל:</strong> ${combinedWeight || '—'}</div>
+    <div><strong>מחיר:</strong> ₪${dealPrice} | <strong>חיסכון:</strong> ₪${saving}</div>
+  `;
+}
+
+
+// ממיר גרש כפול רגיל ל-גרשיים עבריים בכותרת וריאציה (מונע חיתוך ב-HTML)
+function _safeTitle(t) { return t.replace(/"/g, '״'); }
+
+function _calcCombinedWeight(weight, qty) {
+  if (!weight) return '';
+  // מנסה להכפיל: "3 ק\"ג" → 6 ק"ג, "500 גרם" → 1000 גרם → 1 ק"ג
+  const match = weight.match(/([\d.]+)\s*(.*)/);
+  if (!match) return weight;
+  let val = parseFloat(match[1]) * qty;
+  let unit = match[2].trim();
+  // המרה: גרם → ק"ג אם >= 1000
+  if (unit === 'גרם' && val >= 1000) {
+    val = val / 1000;
+    unit = 'ק"ג';
+  }
+  // פורמט: הסרת עשרוני מיותר
+  const formatted = Number.isInteger(val) ? val : parseFloat(val.toFixed(2));
+  return `${formatted} ${unit}`;
+}
+
+function addDealVariation() {
+  const baseIdx   = document.getElementById('deal-base-var').value;
+  const qty       = parseInt(document.getElementById('deal-qty').value);
+  const dealPrice = document.getElementById('deal-price').value.trim();
+
+  if (baseIdx === '') { showToast('בחר וריאציה בסיס', 'error'); return; }
+  if (!dealPrice)     { showToast('הזן מחיר לדיל', 'error'); return; }
+
+  const vars = _getRawVariations();
+  const base = vars[baseIdx];
+  const basePrice = parseFloat(base.price);
+  const saving = Math.round(basePrice * qty - parseFloat(dealPrice));
+  const combinedWeight = _calcCombinedWeight(base.weight || '', qty);
+  const productTitle = document.getElementById('f-title').value.trim();
+  const baseLabel = _dealBaseLabel(base);
+  const title = _safeTitle(`💥${productTitle} ${baseLabel} דיל ${qty} יח' – ₪${dealPrice} (חיסכון של ₪${saving})`);
+
+  addVariation({ title, price: dealPrice, weight: combinedWeight, isDeal: true });
+  currentLabel = `💥דיל ${qty} יחידות`;
+  closeDealModal();
+  showToast(`✅ דיל ${qty} יחידות נוסף`, 'success');
+}
+
+// ══════════════════════════════════════════════
+// CATEGORIES
+// ══════════════════════════════════════════════
+
+function openCatDropdown() {
+  const list = document.getElementById('catDropdownList');
+  list.style.display = 'block';
+  filterCatList();
+}
+
+function filterCatList() {
+  const q = (document.getElementById('catSearch').value || '').toLowerCase();
+  const list = document.getElementById('catDropdownList');
+  const cats = typeof ALL_CATEGORIES === 'object' && !Array.isArray(ALL_CATEGORIES)
+    ? Object.values(ALL_CATEGORIES)
+    : ALL_CATEGORIES;
+
+  const filtered = q ? cats.filter(c => c.toLowerCase().includes(q)) : cats;
+  // בונים id→name map: ALL_CATEGORIES הוא {id: name}
+  const idToName = ALL_CATEGORIES;
+  const nameToId = Object.fromEntries(Object.entries(ALL_CATEGORIES).map(([k,v])=>[v,k]));
+  list.innerHTML = filtered.slice(0, 60).map(name => {
+    const catId = nameToId[name] || name;
+    const already = selectedCategories.find(c => c.id === catId);
+    return `<div class="cat-dropdown-item ${already ? 'selected' : ''}" onclick="selectCategory({id:'${catId}', name:'${name.replace(/'/g, "\\'")}'})">${name}</div>`;
+  }).join('');
+  list.style.display = 'block';
+}
+
+function selectCategory(cat) {
+  if (!selectedCategories.find(c => c.id === cat.id)) {
+    selectedCategories.push(cat);
+    renderCategories();
+  }
+  document.getElementById('catSearch').value = '';
+  document.getElementById('catDropdownList').style.display = 'none';
+}
+
+function removeCategory(id) {
+  selectedCategories = selectedCategories.filter(c => c.id !== id);
+  renderCategories();
+}
+
+function renderCategories() {
+  document.getElementById('selectedCats').innerHTML = selectedCategories.map((c, i) => {
+    const safeId = String(c.id).replace(/'/g, "\'");
+    return `
+      <div class="cat-tag">
+        ${i === 0 ? '🔵 ' : '🟡 '}${c.name}
+        <button onclick="removeCategory('${safeId}')">×</button>
+      </div>
+    `;
+  }).join('');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.cat-dropdown-wrap')) {
+    const r = document.getElementById('catDropdownList');
+    if (r) r.style.display = 'none';
+  }
+});
+
+// ══════════════════════════════════════════════
+// IMAGES
+// ══════════════════════════════════════════════
+
+function setupDragDrop() {
+  const drop = document.getElementById('imageDrop');
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag-over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('drag-over'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.classList.remove('drag-over');
+    handleFiles(e.dataTransfer.files);
+  });
+}
+
+async function handleFiles(files) {
+  const imgs = Array.from(files).filter(f => f.type.startsWith('image/'));
+  if (!imgs.length) return;
+  const formData = new FormData();
+  imgs.forEach(f => formData.append('images', f));
+  try {
+    const res = await fetch('/api/images/upload', { method:'POST', body:formData });
+    const data = await res.json();
+    if (data.images) {
+      const prev = allImages.length;
+      data.images.forEach(img => allImages.push({ path:img.path, dataUrl:img.dataUrl, label:'' }));
+      if (selectedImageIdx === null) selectedImageIdx = prev;
+      renderImagePreview();
+      showToast(`✅ ${data.images.length} תמונות הועלו`, 'success');
+    }
+  } catch(e) { showToast('⚠️ שגיאה בהעלאה', 'error'); }
+}
+
+async function scrapeUrl() {
+  const url = document.getElementById('productUrl').value.trim();
+  if (!url.startsWith('http')) { showToast('הכנס URL תקין','error'); return; }
+  const btn = document.querySelector('.btn-scrape');
+  btn.textContent = '⏳ מחלץ...'; btn.disabled = true;
+  showToast('🔍 מחלץ תמונות...','info',5000);
+  try {
+    const res = await fetch('/api/images/scrape', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({url})
+    });
+    const data = await res.json();
+    if (data.images && data.images.length) {
+      const prev = allImages.length;
+      data.images.forEach((img, i) => allImages.push({
+        path: img.path, dataUrl: img.dataUrl, label: `תמונה ${i+1}`
+      }));
+      if (selectedImageIdx === null) selectedImageIdx = prev;
+      renderImagePreview();
+      showToast(`✅ ${data.images.length} תמונות חולצו — עבור לתצוגה מקדימה`, 'success');
+    } else {
+      showToast('⚠️ לא נמצאו תמונות','error');
+    }
+  } catch(e) { showToast('❌ שגיאה','error'); }
+  finally { btn.textContent='⬇️ חלץ'; btn.disabled=false; }
+}
+
+// ── Hover popup ──
+function showImgPopup(e, img) {
+  const popup = document.getElementById('imgPreviewPopup');
+  const pImg  = document.getElementById('imgPreviewImg');
+  const pNone = document.getElementById('imgPreviewNoImg');
+  if (img.dataUrl) {
+    pImg.src = img.dataUrl; pImg.style.display='block'; pNone.style.display='none';
+  } else {
+    pImg.style.display='none'; pNone.style.display='flex';
+  }
+  popup.style.display = 'block';
+  positionPopup(e);
+}
+function positionPopup(e) {
+  const p = document.getElementById('imgPreviewPopup');
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + 224 > window.innerWidth)  x = e.clientX - 238;
+  if (y + 224 > window.innerHeight) y = e.clientY - 238;
+  p.style.left = x+'px'; p.style.top = y+'px';
+}
+function hideImgPopup() { document.getElementById('imgPreviewPopup').style.display='none'; }
+
+function selectImage(idx) { selectedImageIdx = idx; renderImagePreview(); }
+
+function removeImage(idx, e) {
+  e.stopPropagation();
+  allImages.splice(idx,1);
+  if (selectedImageIdx === idx) selectedImageIdx = allImages.length ? 0 : null;
+  else if (selectedImageIdx > idx) selectedImageIdx--;
+  hideImgPopup(); renderImagePreview();
+}
+
+function renderImagePreview() {
+  const wrap = document.getElementById('imagePreview');
+  const hint = document.getElementById('imageSelectHint');
+  wrap.innerHTML = '';
+  if (!allImages.length) { hint.style.display='none'; return; }
+  hint.style.display = 'block';
+
+  allImages.forEach((img, i) => {
+    const sel = i === selectedImageIdx;
+    const thumb = document.createElement('div');
+    thumb.className = `img-thumb${sel?' selected':''}`;
+    thumb.title = sel ? '✓ נבחר' : 'עבור לתצוגה מקדימה • לחץ לבחירה';
+    thumb.onclick = () => selectImage(i);
+    thumb.addEventListener('mouseenter', e => showImgPopup(e, img));
+    thumb.addEventListener('mousemove',  e => positionPopup(e));
+    thumb.addEventListener('mouseleave', () => hideImgPopup());
+
+    if (img.dataUrl) {
+      thumb.innerHTML = `<img src="${img.dataUrl}" style="width:100%;height:100%;object-fit:cover" />`;
+    } else {
+      thumb.innerHTML = `<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:18px;color:var(--text-dim)">🖼️<span style="font-size:10px;margin-top:2px">${img.label||i+1}</span></div>`;
+    }
+
+    const rm = document.createElement('button');
+    rm.style.cssText = 'position:absolute;top:2px;left:2px;width:16px;height:16px;background:rgba(0,0,0,0.75);border:none;border-radius:3px;color:white;cursor:pointer;font-size:10px;z-index:2;display:flex;align-items:center;justify-content:center;padding:0';
+    rm.textContent = '✕';
+    rm.onclick = e => removeImage(i, e);
+    thumb.appendChild(rm);
+    wrap.appendChild(thumb);
+  });
+}
+
+function getSelectedImagePath() {
+  if (selectedImageIdx === null || !allImages[selectedImageIdx]) return null;
+  return allImages[selectedImageIdx].path;
+}
+
+// ══════════════════════════════════════════════
+// VALIDATION
+// ══════════════════════════════════════════════
+
+function validateRequiredFields() {
+  const title = document.getElementById('f-title').value.trim();
+  const price = document.getElementById('f-price').value.trim();
+  const hasCategory = selectedCategories.length > 0;
+
+  const errors = [];
+  if (!title)       errors.push('שם מוצר');
+  if (!price)       errors.push('מחיר בסיס');
+  if (!hasCategory) errors.push('קטגוריה ראשית');
+
+  if (errors.length) {
+    showToast(`חסרים שדות חובה: ${errors.join(' | ')}`, 'error', 4000);
+    // הדגשת שדות חסרים
+    document.getElementById('f-title').style.borderColor   = !title       ? 'var(--red)' : '';
+    document.getElementById('f-price').style.borderColor   = !price       ? 'var(--red)' : '';
+    document.getElementById('catSearch').style.borderColor = !hasCategory ? 'var(--red)' : '';
+    return false;
+  }
+  // איפוס הדגשות
+  ['f-title','f-price','catSearch'].forEach(id =>
+    document.getElementById(id).style.borderColor = ''
+  );
+  return true;
+}
+
+// ══════════════════════════════════════════════
+// GENERATE
+// ══════════════════════════════════════════════
+
+async function generateContent() {
+  if (!validateRequiredFields()) return;
+
+  const title = document.getElementById('f-title').value.trim();
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> מייצר תוכן...';
+
+  const brandSel = document.getElementById('f-brand');
+  const brandName = brandSel.options[brandSel.selectedIndex]?.dataset.name || '';
+  const brandValue = brandSel.value || '0';
+
+  const payload = {
+    title,
+    brand:          brandName,
+    brand_value:    brandValue,
+    price:          document.getElementById('f-price').value.trim(),
+    price_discount: document.getElementById('f-price-discount').value.trim(),
+    status:         document.getElementById('f-status').value,
+    label:          currentLabel,
+    variations:     getVariations(),
+    category_ids:   selectedCategories.map(c => c.id),
+    image_paths:    getSelectedImagePath() ? [getSelectedImagePath()] : [],
+  };
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      // שמור וריאציות מהטופס — כולל דילים — שלא יאבדו ב-AI
+      const formVariations = getVariations();
+      currentProduct = data.product;
+      if (formVariations.length) currentProduct.variations = formVariations;
+      showPreviewModal(currentProduct);
+      showToast('תוכן AI נוצר בהצלחה!', 'success');
+    } else {
+      showToast(data.error || 'שגיאה בייצור תוכן', 'error');
+    }
+  } catch (err) {
+    showToast('שגיאת רשת', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '✨ צור תוכן AI';
+  }
+}
+
+// ══════════════════════════════════════════════
+// PREVIEW MODAL
+// ══════════════════════════════════════════════
+
+function showPreviewModal(product) {
+  const rows = [
+    ['כותרת',    product.title],
+    ['SEO',      product.seo_title],
+    ['מותג',     product.brand],
+    ['תיאור',    product.desc],
+    ['מחיר',     product.price ? `${product.price} ₪` : '—'],
+    ['מבצע',     product.price_discount ? `${product.price_discount} ₪` : '—'],
+    ['תווית',    product.label || '—'],
+    ['וריאציות', product.variations?.map(v => `${v.title} — ${v.price}₪`).join(' | ') || '—'],
+    ['שאלות',    product.faqs ? `${product.faqs.length} שאלות ותשובות` : '—'],
+  ];
+  document.getElementById('previewBody').innerHTML = rows.map(([k, v]) => `
+    <div class="preview-row">
+      <div class="preview-key">${k}</div>
+      <div class="preview-val">${v || '—'}</div>
+    </div>
+  `).join('');
+  document.getElementById('previewModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('previewModal').classList.remove('open');
+}
+
+async function uploadProduct() {
+  if (!validateRequiredFields()) { closeModal(); return; }
+  if (!currentProduct) { showToast('אין מוצר לעלות', 'error'); return; }
+
+  const btn = document.querySelector('.modal-footer .btn-primary');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> מעלה...';
+  closeModal();
+
+  showToast('🔄 מתחבר לאתר ופותח דפדפן...', 'info', 8000);
+
+  try {
+    // שלב 1: קבל job_id
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(currentProduct)
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      showToast('❌ שגיאה: ' + data.error, 'error', 6000);
+      btn.disabled = false;
+      btn.innerHTML = '🚀 העלה לאתר';
+      return;
+    }
+
+    const jobId = data.job_id;
+    if (!jobId) {
+      showToast('❌ לא התקבל job_id מהשרת', 'error', 5000);
+      btn.disabled = false;
+      btn.innerHTML = '🚀 העלה לאתר';
+      return;
+    }
+
+    // שלב 2: האזן ל-SSE progress
+    const evtSource = new EventSource(`/api/upload/progress/${jobId}`);
+
+    evtSource.onmessage = (e) => {
+      let event;
+      try { event = JSON.parse(e.data); } catch { return; }
+
+      const { status, message } = event;
+
+      if (status === 'progress') {
+        showToast(message, 'info', 5000);
+      } else if (status === 'done') {
+        evtSource.close();
+        showToast(message || '✅ המוצר הועלה בהצלחה!', 'success', 7000);
+        btn.disabled = false;
+        btn.innerHTML = '🚀 העלה לאתר';
+      } else if (status === 'error' || status === 'timeout') {
+        evtSource.close();
+        showToast('❌ ' + (message || 'שגיאה בהעלאה'), 'error', 7000);
+        btn.disabled = false;
+        btn.innerHTML = '🚀 העלה לאתר';
+      }
+    };
+
+    evtSource.onerror = () => {
+      evtSource.close();
+      showToast('❌ אובדן חיבור לשרת', 'error', 5000);
+      btn.disabled = false;
+      btn.innerHTML = '🚀 העלה לאתר';
+    };
+
+  } catch (err) {
+    showToast('❌ שגיאת רשת: ' + err.message, 'error', 5000);
+    btn.disabled = false;
+    btn.innerHTML = '🚀 העלה לאתר';
+  }
+}
+
+// ══════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════
+
+function openProductForm() {
+  document.getElementById('formScroll').scrollTo({ top: 0, behavior: 'smooth' });
+  document.getElementById('f-title').focus();
+}
+
+function clearForm() {
+  ['f-title','f-brand','f-price','f-price-discount'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-status').value = '1';
+  document.getElementById('variationsList').innerHTML = '';
+  selectedCategories = [];
+  renderCategories();
+  uploadedImages = [];
+  allImages = [];
+  selectedImageIdx = null;
+  renderImagePreview();
+  currentProduct = null;
+  currentLabel = '';
+  showToast('הטופס נוקה', 'info');
+}
+
+function showToast(msg, type = 'info', duration = 3000) {
+  const container = document.getElementById('toastContainer');
+  const div = document.createElement('div');
+  div.className = `toast toast-${type}`;
+  div.textContent = msg;
+  container.appendChild(div);
+  setTimeout(() => div.remove(), duration);
+}
+</script>
+</body>
+</html>

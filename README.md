@@ -1,4 +1,4 @@
-# Petway — AI-Powered E-Commerce Automation
+# Petway - AI-Powered E-Commerce Automation
 
 A Python automation platform built for a real e-commerce workflow to reduce repetitive product-management and SEO work across a large online catalog.
 
